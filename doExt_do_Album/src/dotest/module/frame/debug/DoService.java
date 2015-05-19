@@ -3,7 +3,7 @@ package dotest.module.frame.debug;
 import java.util.Map;
 
 import core.DoServiceContainer;
-import core.helper.jsonparse.DoJsonNode;
+import org.json.JSONObject;
 import core.object.DoInvokeResult;
 import core.object.DoModule;
 
@@ -26,10 +26,10 @@ public class DoService {
          DoInvokeResult _invokeResult = scriptEngine.CreateInvokeResult(null);
          try{
         	 //设置text参数
-             DoJsonNode _jsonPara = new DoJsonNode();
-             _jsonPara.setOneText(_propertyID, _value);
-             DoJsonNode jsonNode = new DoJsonNode();
-             jsonNode.setOneNode("data", _jsonPara);
+             JSONObject _jsonPara = new JSONObject();
+             _jsonPara.put(_propertyID, _value);
+             JSONObject jsonNode = new JSONObject();
+             jsonNode.put("data", _jsonPara);
              _module.invokeSyncMethod("set", jsonNode, scriptEngine, _invokeResult);
              DoServiceContainer.getLogEngine().writeDebug("设置属性成功：" + _propertyID + "\n" + _invokeResult.getResult());
          }catch (Exception _err){
@@ -40,10 +40,10 @@ public class DoService {
      public static void syncMethod(DoModule _module, String _methodName, Map<String, String> _paras){
          DoInvokeResult _invokeResult = scriptEngine.CreateInvokeResult(null);
          try{
-             DoJsonNode _jsonPara = new DoJsonNode();
+             JSONObject _jsonPara = new JSONObject();
              if (_paras != null){
                  for (String _key :_paras.keySet()){
-                     _jsonPara.setOneText(_key, _paras.get(_key));
+                     _jsonPara.put(_key, _paras.get(_key));
                  }
              }
             _module.invokeSyncMethod(_methodName, _jsonPara, scriptEngine, _invokeResult);
@@ -55,10 +55,10 @@ public class DoService {
 
      public static void ansyncMethod(DoModule _module, String _methodName, Map<String, String> _paras, EventCallBack _eventCallBack){
          try{
-             DoJsonNode _jsonPara = new DoJsonNode();
+             JSONObject _jsonPara = new JSONObject();
              if (_paras != null){
                  for (String _key :_paras.keySet()){
-                     _jsonPara.setOneText(_key, _paras.get(_key));
+                     _jsonPara.put(_key, _paras.get(_key));
                  }
              }
              String _uniqueKey = "doCallBackKey_" + (uniqueKeyCursor ++);

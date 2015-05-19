@@ -10,7 +10,11 @@ import android.graphics.Bitmap;
 import android.os.Environment;
 import core.DoServiceContainer;
 import core.helper.DoIOHelper;
-import core.helper.jsonparse.DoJsonNode;
+import core.helper.DoJsonHelper;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import core.interfaces.DoActivityResultListener;
 import core.interfaces.DoIPageView;
 import core.interfaces.DoIScriptEngine;
@@ -46,7 +50,7 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 	 * @_invokeResult 用于返回方法结果对象
 	 */
 	@Override
-	public boolean invokeSyncMethod(String _methodName, DoJsonNode _dictParas, DoIScriptEngine _scriptEngine, DoInvokeResult _invokeResult) throws Exception {
+	public boolean invokeSyncMethod(String _methodName, JSONObject _dictParas, DoIScriptEngine _scriptEngine, DoInvokeResult _invokeResult) throws Exception {
 		// ...do something
 		return super.invokeSyncMethod(_methodName, _dictParas, _scriptEngine, _invokeResult);
 	}
@@ -65,7 +69,7 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 	 *                    DoInvokeResult(this.getUniqueKey());
 	 */
 	@Override
-	public boolean invokeAsyncMethod(String _methodName, DoJsonNode _dictParas, DoIScriptEngine _scriptEngine, String _callbackFuncName) throws Exception {
+	public boolean invokeAsyncMethod(String _methodName, JSONObject _dictParas, DoIScriptEngine _scriptEngine, String _callbackFuncName) throws Exception {
 		if ("select".equals(_methodName)) {
 			this.select(_dictParas, _scriptEngine, _callbackFuncName);
 			return true;
@@ -86,12 +90,12 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 	 * @_callbackFuncName 回调函数名
 	 */
 	@Override
-	public void save(DoJsonNode _dictParas, DoIScriptEngine _scriptEngine, String _callbackFuncName) throws Exception {
-		String _path = _dictParas.getOneText("path", ""); // 图片路径
-		String _name = _dictParas.getOneText("name", "default.jpg"); // 图片名称
-		int _width = _dictParas.getOneInteger("width", 0); // 选择后的图片的宽度，不填默认图片宽度
-		int _height = _dictParas.getOneInteger("height", 0); // 选择后的图片的高度，不填默认图片高度
-		int _quality = _dictParas.getOneInteger("quality", 100); // 清晰度1-100,缺省是100表示原始的图片质量
+	public void save(JSONObject _dictParas, DoIScriptEngine _scriptEngine, String _callbackFuncName) throws Exception {
+		String _path = DoJsonHelper.getString(_dictParas, "path", "");// 图片路径
+		String _name = DoJsonHelper.getString(_dictParas, "name", "default.jpg"); // 图片名称
+		int _width = DoJsonHelper.getInt(_dictParas, "width", 0); // 选择后的图片的宽度，不填默认图片宽度
+		int _height = DoJsonHelper.getInt(_dictParas, "height", 0); // 选择后的图片的高度，不填默认图片高度
+		int _quality = DoJsonHelper.getInt(_dictParas, "quality", 100); // 清晰度1-100,缺省是100表示原始的图片质量
 		if ("".equals(_name.trim())) {
 			_name = "default.jpg";
 		}
@@ -126,13 +130,13 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 	 * @_callbackFuncName 回调函数名
 	 */
 	@Override
-	public void select(DoJsonNode _dictParas, DoIScriptEngine _scriptEngine, String _callbackFuncName) throws Exception {
+	public void select(JSONObject _dictParas, DoIScriptEngine _scriptEngine, String _callbackFuncName) throws Exception {
 		BitmapUtils.selectPaths.clear();
 		ConstantValue.MAX_COUNT = 0;
-		int _maxCount = _dictParas.getOneInteger("maxCount", 0); // 总共最多选几张
-		int _width = _dictParas.getOneInteger("width", 0); // 选择后的图片的宽度，不填默认图片宽度
-		int _height = _dictParas.getOneInteger("height", 0); // 选择后的图片的高度，不填默认图片高度
-		int _quality = _dictParas.getOneInteger("quality", 100); // 清晰度1-100,缺省是100表示原始的图片质量
+		int _maxCount = DoJsonHelper.getInt(_dictParas, "maxCount", 0); // 总共最多选几张
+		int _width = DoJsonHelper.getInt(_dictParas, "width", 0); // 选择后的图片的宽度，不填默认图片宽度
+		int _height = DoJsonHelper.getInt(_dictParas, "height", 0); // 选择后的图片的高度，不填默认图片高度
+		int _quality = DoJsonHelper.getInt(_dictParas, "quality", 100); // 清晰度1-100,缺省是100表示原始的图片质量
 		ConstantValue.MAX_COUNT = _maxCount;
 		this.scriptEngine = _scriptEngine;
 		this.callbackFuncName = _callbackFuncName;
@@ -153,7 +157,7 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 			ArrayList<String> _results = intent.getStringArrayListExtra("result");
 			if (scriptEngine != null && callbackFuncName != null && _results != null) {
 				DoInvokeResult _invoke = new DoInvokeResult(this.getUniqueKey());
-				_invoke.setResultTextArray(_results);
+				_invoke.setResultArray(new JSONArray(_results));
 				scriptEngine.callback(callbackFuncName, _invoke);
 			}
 		}
