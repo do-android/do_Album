@@ -155,7 +155,7 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		if (intent != null) {
 			ArrayList<String> _results = intent.getStringArrayListExtra("result");
-			if (scriptEngine != null && callbackFuncName != null && _results != null) {
+			if (scriptEngine != null && callbackFuncName != null && _results != null && _results.size() > 0) {
 				DoInvokeResult _invoke = new DoInvokeResult(this.getUniqueKey());
 				_invoke.setResultArray(new JSONArray(_results));
 				scriptEngine.callback(callbackFuncName, _invoke);

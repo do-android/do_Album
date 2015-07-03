@@ -36,7 +36,7 @@
                 android:background="@drawable/album_button_bg"
                 android:paddingLeft="8dip"
                 android:paddingRight="8dip"
-                android:text="完成"
+                android:text="取消"
                 android:textColor="@android:color/white"
                 android:textSize="15sp" />
         </RelativeLayout>
@@ -89,7 +89,8 @@
             android:paddingLeft="8dip"
             android:paddingRight="8dip"
             android:text="预览"
-            android:textColor="@android:color/white"
+            android:enabled="false"
+            android:textColor="#aaffffff"
             android:textSize="15sp" />
     </RelativeLayout>
 

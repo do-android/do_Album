@@ -65,9 +65,13 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 			public void onListen(int count) {
 				if (count > 0) {
 					btn_cancel.setText("完成(" + count + "/" + ConstantValue.MAX_COUNT + ")");
+					btn_preview.setEnabled(true);
+					btn_preview.setTextColor(Color.WHITE);
 					btn_preview.setText("预览(" + count + ")");
 				} else {
-					btn_cancel.setText("完成");
+					btn_cancel.setText("取消");
+					btn_preview.setEnabled(false);
+					btn_preview.setTextColor(Color.parseColor("#aaffffff"));
 					btn_preview.setText("预览");
 				}
 			}
