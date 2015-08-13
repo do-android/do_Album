@@ -30,4 +30,9 @@ public class do_Album_App implements DoIAppDelegate {
 	public String getModuleTypeID() {
 		return "do_Album";
 	}
+
+	@Override
+	public String getTypeID() {
+		return getModuleTypeID();
+	}
 }
