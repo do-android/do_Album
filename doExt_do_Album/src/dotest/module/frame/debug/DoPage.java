@@ -122,4 +122,16 @@ public class DoPage implements DoIPage {
 		return false;
 	}
 
+	@Override
+	public void setTransparent(boolean transparent) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isTransparent() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
