@@ -1,6 +1,7 @@
 package doext.implement;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -59,6 +60,10 @@ public class MyAsyncTask extends AsyncTask<Void, Void, ArrayList<String>> {
 				DoIOHelper.writeAllBytes(_fileFullName, photo_data.toByteArray());
 				String uri = "data://temp/do_Album/" + _fileName;
 				urlList.add(uri);
+				if (ConstantValue.ISCUT && imagePath.contains("do_Album")) {
+					// 删除临时文件
+					new File(imagePath).delete();
+				}
 			}
 
 		} catch (Exception _err) {

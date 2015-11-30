@@ -1,15 +1,21 @@
 package doext.choosephotos;
 
+import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -27,6 +33,8 @@ import doext.implement.MyAsyncTask;
 import doext.preview.ShowPictureViewActivity;
 
 public class ImageGridActivity extends Activity implements DoIModuleTypeID {
+	private static final int CutCode = 100002;
+	private String tempPath = Environment.getExternalStorageDirectory() + "/do_Album_" + getTimestampStr() + ".jpg";
 	private List<ImageItem> dataList;
 	private GridView gridView;
 	private ImageGridAdapter adapter;
@@ -88,7 +96,20 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 		btn_cancel = (Button) findViewById(cancel_id);
 		btn_cancel.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				new MyAsyncTask(ImageGridActivity.this, getIntent()).execute();
+				if (ConstantValue.MAX_COUNT == 1 && ConstantValue.ISCUT && BitmapUtils.selectPaths.size() == 1) {
+					Uri imageUri = Uri.fromFile(new File(BitmapUtils.selectPaths.get(0)));
+					Intent intentCrop = new Intent("com.android.camera.action.CROP");
+					intentCrop.setDataAndType(imageUri, "image/*");
+					intentCrop.putExtra("crop", "true");
+					intentCrop.putExtra("scale", true);
+					intentCrop.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(tempPath)));
+					intentCrop.putExtra("return-data", false);
+					intentCrop.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+					intentCrop.putExtra("noFaceDetection", true);
+					startActivityForResult(intentCrop, CutCode);
+				} else {
+					new MyAsyncTask(ImageGridActivity.this, getIntent()).execute();
+				}
 			}
 		});
 
@@ -116,6 +137,11 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 			setResult(Activity.RESULT_OK, data);
 			finish();
 			break;
+		case CutCode:
+			BitmapUtils.selectPaths.clear();
+			BitmapUtils.selectPaths.add(tempPath);
+			new MyAsyncTask(ImageGridActivity.this, getIntent()).execute();
+			break;
 		}
 	}
 
@@ -128,5 +154,14 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 	@Override
 	public String getTypeID() {
 		return do_Album_App.getInstance().getModuleTypeID();
+	}
+
+	/**
+	 * @return 类似于字符串 ：20140324043154806
+	 */
+	@SuppressLint("SimpleDateFormat")
+	private String getTimestampStr() {
+		java.text.DateFormat format = new java.text.SimpleDateFormat("yyyyMMddHHmmssS");
+		return format.format(new Date());
 	}
 }
