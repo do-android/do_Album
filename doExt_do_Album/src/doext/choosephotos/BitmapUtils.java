@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import core.DoServiceContainer;
 
 public class BitmapUtils {
 	public static List<String> selectPaths = new ArrayList<String>();
@@ -40,6 +41,7 @@ public class BitmapUtils {
 	private static final int MAX_HEIGHT = 1024;
 
 	// 按给定长宽比缩放得到图像
+	@SuppressWarnings("deprecation")
 	public static Bitmap resizeRealImage(String path, int width, int height) {
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inPurgeable = true;
@@ -64,46 +66,74 @@ public class BitmapUtils {
 		options.inJustDecodeBounds = false;
 
 		Bitmap bm = BitmapFactory.decodeFile(path, options);
-
 		// 处理旋转
 		int degree = readPictureDegree(path);
+		// 取得想要缩放的matrix参数
+		Matrix matrix = new Matrix();
+		// 旋转图片
 		if (degree != 0) {
-			Bitmap oldbm = bm;
-			bm = rotaingImageView(degree, oldbm);
-			oldbm.recycle();
-			oldbm = null;
+			matrix.postRotate(degree);
 		}
 
 		if (width > 0 && height > 0 && (width != bm.getWidth() || height != bm.getHeight())) {
 			// 计算缩放比例
 			float scaleWidth = ((float) width) / bm.getWidth();
 			float scaleHeight = ((float) height) / bm.getHeight();
-			// 取得想要缩放的matrix参数
-			Matrix matrix = new Matrix();
 			matrix.postScale(scaleWidth, scaleHeight);
-			// 得到新的图片
-			Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
-			// 释放bm
-			bm.recycle();
-			bm = null;
-			return newbm;
-		} else {
-			return bm;
 		}
+		// 得到新的图片
+		Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
+		// 释放bm
+		bm.recycle();
+		bm = null;
+		return newbm;
 	}
 
-	public static int computeSampleSize(BitmapFactory.Options options, int minSideLength, int maxNumOfPixels) {
-		int initialSize = computeInitialSampleSize(options, minSideLength, maxNumOfPixels);
-		int roundedSize;
-		if (initialSize <= 8) {
-			roundedSize = 1;
-			while (roundedSize < initialSize) {
-				roundedSize <<= 1;
-			}
-		} else {
-			roundedSize = (initialSize + 7) / 8 * 8;
+	private static int computeSampleSize(BitmapFactory.Options options, int minSideLength, int maxNumOfPixels) {
+		// 宽高为 -1,-1 和 宽高 -2,-2
+		if (maxNumOfPixels == 1 || maxNumOfPixels == 4) {
+			maxNumOfPixels = -1;
 		}
-		return roundedSize;
+		int initialSize = computeInitialSampleSize(options, minSideLength, maxNumOfPixels);
+		if (initialSize == 1) {
+			int x = DoServiceContainer.getGlobal().getScreenWidth();
+			int y = DoServiceContainer.getGlobal().getScreenHeight();
+			// 原图最大不能超过分辨率大小，如超出则进行缩小尺寸，避免OOM；
+			initialSize = calculateInSampleSize(options, x, y);
+		}
+		if (initialSize > 5) {// 最大缩小倍数不超过5
+			return 5;
+		}
+		return initialSize;
+	}
+
+	/**
+	 * 根据分辨率大小返回inSampleSize
+	 * 
+	 * @param options
+	 * @param reqWidth
+	 * @param reqHeight
+	 * @return
+	 */
+	public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+		// Raw height and width of image
+		final int height = options.outHeight;
+		final int width = options.outWidth;
+		int inSampleSize = 1;
+		if (height >= reqHeight || width >= reqWidth) {
+			int halfHeight = height / 2;
+			int halfWidth = width / 2;
+			inSampleSize = 2;
+			// Calculate the largest inSampleSize value that is a power of 2 and
+			// keeps both
+			// height and width larger than the requested height and width.
+			while (halfHeight >= reqHeight || halfWidth >= reqWidth) {
+				inSampleSize += 1;
+				halfHeight = halfHeight / 2;
+				halfWidth = halfWidth / 2;
+			}
+		}
+		return inSampleSize;
 	}
 
 	public static int computeInitialSampleSize(BitmapFactory.Options options, int minSideLength, int maxNumOfPixels) {
@@ -153,22 +183,22 @@ public class BitmapUtils {
 		return degree;
 	}
 
-	/*
-	 * 旋转图片
-	 * 
-	 * @param angle
-	 * 
-	 * @param bitmap
-	 * 
-	 * @return Bitmap
-	 */
-	public static Bitmap rotaingImageView(int angle, Bitmap bitmap) {
-		// 旋转图片 动作
-		Matrix matrix = new Matrix();
-		;
-		matrix.postRotate(angle);
-		// 创建新的图片
-		Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-		return resizedBitmap;
-	}
+//	/*
+//	 * 旋转图片
+//	 * 
+//	 * @param angle
+//	 * 
+//	 * @param bitmap
+//	 * 
+//	 * @return Bitmap
+//	 */
+//	public static Bitmap rotaingImageView(int angle, Bitmap bitmap) {
+//		// 旋转图片 动作
+//		Matrix matrix = new Matrix();
+//		;
+//		matrix.postRotate(angle);
+//		// 创建新的图片
+//		Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+//		return resizedBitmap;
+//	}
 }
