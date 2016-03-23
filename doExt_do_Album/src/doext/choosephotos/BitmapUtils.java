@@ -41,7 +41,6 @@ public class BitmapUtils {
 	private static final int MAX_HEIGHT = 1024;
 
 	// 按给定长宽比缩放得到图像
-	@SuppressWarnings("deprecation")
 	public static Bitmap resizeRealImage(String path, int width, int height) {
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inPurgeable = true;
