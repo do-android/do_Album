@@ -81,11 +81,7 @@ public class BitmapUtils {
 			matrix.postScale(scaleWidth, scaleHeight);
 		}
 		// 得到新的图片
-		Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
-		// 释放bm
-		bm.recycle();
-		bm = null;
-		return newbm;
+		return Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
 	}
 
 	private static int computeSampleSize(BitmapFactory.Options options, int minSideLength, int maxNumOfPixels) {

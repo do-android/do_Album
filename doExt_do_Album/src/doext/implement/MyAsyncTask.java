@@ -57,6 +57,10 @@ public class MyAsyncTask extends AsyncTask<Void, Void, ArrayList<String>> {
 				ByteArrayOutputStream photo_data = new ByteArrayOutputStream();
 				Bitmap bitmap = BitmapUtils.resizeRealImage(imagePath, width, height);
 				bitmap.compress(Bitmap.CompressFormat.JPEG, quality, photo_data);
+				if (bitmap != null && !bitmap.isRecycled()) {
+					bitmap.recycle();
+					bitmap = null;
+				}
 				DoIOHelper.writeAllBytes(_fileFullName, photo_data.toByteArray());
 				String uri = "data://temp/do_Album/" + _fileName;
 				urlList.add(uri);
