@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -108,7 +109,7 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 					intentCrop.putExtra("noFaceDetection", true);
 					startActivityForResult(intentCrop, CutCode);
 				} else {
-					new MyAsyncTask(ImageGridActivity.this, getIntent()).execute();
+					new MyAsyncTask(ImageGridActivity.this, getIntent()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 				}
 			}
 		});
@@ -140,7 +141,7 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 		case CutCode:
 			BitmapUtils.selectPaths.clear();
 			BitmapUtils.selectPaths.add(tempPath);
-			new MyAsyncTask(ImageGridActivity.this, getIntent()).execute();
+			new MyAsyncTask(ImageGridActivity.this, getIntent()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			break;
 		}
 	}
