@@ -34,22 +34,6 @@
             android:layout_marginLeft="60dip"
             android:textColor="@android:color/white"
             android:textSize="18sp" />
-
-        <Button
-            android:id="@+id/cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginBottom="8dip"
-            android:layout_marginRight="10dip"
-            android:layout_marginTop="8dip"
-            android:background="@drawable/album_button_bg"
-            android:paddingLeft="8dip"
-            android:paddingRight="8dip"
-            android:text="完成"
-            android:textColor="@android:color/white"
-            android:textSize="15sp" />
     </RelativeLayout>
 
     <doext.preview.custom.HackyViewPager

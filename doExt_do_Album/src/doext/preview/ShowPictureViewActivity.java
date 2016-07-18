@@ -14,14 +14,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.Button;
 import android.widget.TextView;
 import core.helper.DoResourcesHelper;
 import core.interfaces.DoIModuleTypeID;
 import doext.app.do_Album_App;
 import doext.choosephotos.BitmapUtils;
-import doext.implement.ConstantValue;
-import doext.implement.MyAsyncTask;
 import doext.preview.custom.HackyViewPager;
 import doext.preview.custom.PhotoView;
 
@@ -29,7 +26,6 @@ public class ShowPictureViewActivity extends Activity implements DoIModuleTypeID
 
 	private HackyViewPager mViewPager;
 	private TextView tv_count;
-	private Button btn_cancel;
 	private static final int MAXWIDTH = 1000;
 	private static final int MAXHEIGHT = 1000;
 
@@ -67,16 +63,6 @@ public class ShowPictureViewActivity extends Activity implements DoIModuleTypeID
 			@Override
 			public void onClick(View v) {
 				finish();
-			}
-		});
-
-		int cancel_id = DoResourcesHelper.getIdentifier("cancel", "id", this);
-		btn_cancel = (Button) findViewById(cancel_id);
-		btn_cancel.setText("完成(" + BitmapUtils.selectPaths.size() + "/" + ConstantValue.MAX_COUNT + ")");
-		btn_cancel.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				new MyAsyncTask(ShowPictureViewActivity.this, getIntent()).execute();
 			}
 		});
 	}
