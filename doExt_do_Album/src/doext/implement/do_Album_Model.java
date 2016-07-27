@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -11,10 +14,6 @@ import android.os.Environment;
 import core.DoServiceContainer;
 import core.helper.DoIOHelper;
 import core.helper.DoJsonHelper;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import core.interfaces.DoActivityResultListener;
 import core.interfaces.DoIPageView;
 import core.interfaces.DoIScriptEngine;
@@ -103,7 +102,12 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 		_quality = _quality < 1 ? 1 : _quality;
 
 		DoInvokeResult _result = new DoInvokeResult(do_Album_Model.this.getUniqueKey());
-		String _fileFullName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/dcim/Camera" + "/" + _name;
+
+		File _dirName = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/dcim/Camera");
+		if (!_dirName.exists()) {
+			_dirName.mkdirs();
+		}
+		String _fileFullName = _dirName.getAbsolutePath() + "/" + _name;
 		String _filePath = DoIOHelper.getLocalFileFullPath(_scriptEngine.getCurrentPage().getCurrentApp(), _path);
 		if (DoIOHelper.existFile(_filePath)) {
 			if (_width <= 0 || _height <= 0) {
@@ -113,12 +117,21 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 				FileOutputStream photoOutputStream = new FileOutputStream(new File(_fileFullName));
 				bitmap.compress(Bitmap.CompressFormat.JPEG, _quality, photoOutputStream);
 			}
+//			galleryAddPic(DoServiceContainer.getPageViewFactory().getAppContext(), _fileFullName);
 			_result.setResultBoolean(true);
 		} else {
 			_result.setResultBoolean(false);
 		}
 		_scriptEngine.callback(_callbackFuncName, _result);
 	}
+
+//	private void galleryAddPic(Context context, String mCurrentPhotoPath) {
+//		Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+//		File f = new File(mCurrentPhotoPath);
+//		Uri contentUri = Uri.fromFile(f);
+//		mediaScanIntent.setData(contentUri);
+//		context.sendBroadcast(mediaScanIntent);
+//	}
 
 	/**
 	 * 从相册选择照片；
