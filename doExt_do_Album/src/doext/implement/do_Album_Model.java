@@ -145,9 +145,9 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 	@Override
 	public void select(JSONObject _dictParas, DoIScriptEngine _scriptEngine, String _callbackFuncName) throws Exception {
 		BitmapUtils.selectPaths.clear();
-		ConstantValue.MAX_COUNT = 0;
+		ConstantValue.MAX_COUNT = 9;
 		ConstantValue.ISCUT = false;
-		int _maxCount = DoJsonHelper.getInt(_dictParas, "maxCount", 0); // 总共最多选几张
+		int _maxCount = DoJsonHelper.getInt(_dictParas, "maxCount", 9); // 总共最多选几张
 		int _width = DoJsonHelper.getInt(_dictParas, "width", 0); // 选择后的图片的宽度，不填默认图片宽度
 		int _height = DoJsonHelper.getInt(_dictParas, "height", 0); // 选择后的图片的高度，不填默认图片高度
 		int _quality = DoJsonHelper.getInt(_dictParas, "quality", 100); // 清晰度1-100,缺省是100表示原始的图片质量
