@@ -35,7 +35,8 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 	private DoIPageView pageView;
 	private DoIScriptEngine scriptEngine;
 	private String callbackFuncName;
-
+	private	String _fileFullName;
+	private	String _img;
 	public do_Album_Model() throws Exception {
 		super();
 	}
@@ -107,22 +108,43 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 		if (!_dirName.exists()) {
 			_dirName.mkdirs();
 		}
-		String _fileFullName = _dirName.getAbsolutePath() + "/" + _name;
-		String _filePath = DoIOHelper.getLocalFileFullPath(_scriptEngine.getCurrentPage().getCurrentApp(), _path);
-		if (DoIOHelper.existFile(_filePath)) {
-			if (_width <= 0 || _height <= 0) {
-				DoIOHelper.fileCopy(_filePath, _fileFullName);
-			} else {
-				Bitmap bitmap = BitmapUtils.resizeRealImage(_filePath, _width, _height);
-				FileOutputStream photoOutputStream = new FileOutputStream(new File(_fileFullName));
-				bitmap.compress(Bitmap.CompressFormat.JPEG, _quality, photoOutputStream);
-			}
-//			galleryAddPic(DoServiceContainer.getPageViewFactory().getAppContext(), _fileFullName);
-			_result.setResultBoolean(true);
-		} else {
-			_result.setResultBoolean(false);
-		}
-		_scriptEngine.callback(_callbackFuncName, _result);
+		// 判断_name参数是否包含文件夹（两种方式：1.直接复制图片；2.创建文件夹并复制图片）
+				if (_name.contains("/")) {
+					int lastIndexOf = _name.lastIndexOf("/");
+					String _path1 = _name;
+					_img = _path1.substring(lastIndexOf + 1, _path1.length());
+
+					_path1 = _path1.substring(0, lastIndexOf + 1);
+					_fileFullName = _dirName.getAbsolutePath() + "/" + _path1;
+				} else {
+					_fileFullName = _dirName.getAbsolutePath() + "/" + _name;
+				}
+
+				String _filePath = DoIOHelper.getLocalFileFullPath(_scriptEngine.getCurrentPage().getCurrentApp(), _path);
+				if (DoIOHelper.existFile(_filePath)) {
+					if (_width <= 0 || _height <= 0) {
+						if (_name.contains("/")) {
+							File file = new File(_fileFullName);
+							if (!file.exists()) {
+								file.mkdirs();
+							} else {
+								DoIOHelper.fileCopy(_filePath, _fileFullName + _img);
+							}
+						} else {
+							DoIOHelper.fileCopy(_filePath, _fileFullName);
+						}
+
+					} else {
+						Bitmap bitmap = BitmapUtils.resizeRealImage(_filePath, _width, _height);
+						FileOutputStream photoOutputStream = new FileOutputStream(new File(_fileFullName));
+						bitmap.compress(Bitmap.CompressFormat.JPEG, _quality, photoOutputStream);
+					}
+//					galleryAddPic(DoServiceContainer.getPageViewFactory().getAppContext(), _fileFullName);
+					_result.setResultBoolean(true);
+				} else {
+					_result.setResultBoolean(false);
+				}
+				_scriptEngine.callback(_callbackFuncName, _result);
 	}
 
 //	private void galleryAddPic(Context context, String mCurrentPhotoPath) {
