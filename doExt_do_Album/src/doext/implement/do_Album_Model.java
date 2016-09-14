@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaScannerConnection;
 import android.os.Environment;
-import android.util.Log;
 import core.DoServiceContainer;
 import core.helper.DoIOHelper;
 import core.helper.DoJsonHelper;
@@ -110,30 +109,30 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 			_dirName.mkdirs();
 		}
 		String _fileFullName = _dirName.getAbsolutePath() + "/" + _name;
-		
+
 		File _mParentFile = new File(_fileFullName).getParentFile();
-		if(!_mParentFile.exists()){
+		if (!_mParentFile.exists()) {
 			_mParentFile.mkdirs();
 		}
-		
+
 		String _filePath = DoIOHelper.getLocalFileFullPath(_scriptEngine.getCurrentPage().getCurrentApp(), _path);
 		if (DoIOHelper.existFile(_filePath)) {
 			if (_width <= 0 || _height <= 0) {
 				try {
 					DoIOHelper.fileCopy(_filePath, _fileFullName);
 				} catch (Exception e) {
-				e.printStackTrace();
+					e.printStackTrace();
 				}
-				
+
 			} else {
 				Bitmap bitmap = BitmapUtils.resizeRealImage(_filePath, _width, _height);
 				FileOutputStream photoOutputStream = new FileOutputStream(new File(_fileFullName));
 				bitmap.compress(Bitmap.CompressFormat.JPEG, _quality, photoOutputStream);
 			}
 //			galleryAddPic(DoServiceContainer.getPageViewFactory().getAppContext(), _fileFullName);
-		
+
 			_result.setResultBoolean(true);
-			MediaScannerConnection.scanFile(DoServiceContainer.getPageViewFactory().getAppContext(),new String[] {  _fileFullName   }, null,null);
+			MediaScannerConnection.scanFile(DoServiceContainer.getPageViewFactory().getAppContext(), new String[] { _fileFullName }, null, null);
 		} else {
 			_result.setResultBoolean(false);
 		}
