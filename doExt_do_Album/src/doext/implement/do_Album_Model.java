@@ -132,6 +132,7 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 //			galleryAddPic(DoServiceContainer.getPageViewFactory().getAppContext(), _fileFullName);
 
 			_result.setResultBoolean(true);
+			galleryAddPic(DoServiceContainer.getPageViewFactory().getAppContext(), _fileFullName);
 			MediaScannerConnection.scanFile(DoServiceContainer.getPageViewFactory().getAppContext(), new String[] { _fileFullName }, null, null);
 		} else {
 			_result.setResultBoolean(false);
@@ -146,7 +147,21 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 //		mediaScanIntent.setData(contentUri);
 //		context.sendBroadcast(mediaScanIntent);
 //	}
+	private void galleryAddPic(Context context, String path) {
+		ContentValues localContentValues = new ContentValues();
 
+		localContentValues.put("_data", path);
+
+		localContentValues.put("description", "save image ---");
+
+		localContentValues.put("mime_type", "image/jpeg");
+
+		ContentResolver localContentResolver = context.getContentResolver();
+
+		Uri localUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
+		localContentResolver.insert(localUri, localContentValues);
+	}
 	/**
 	 * 从相册选择照片；
 	 * 
