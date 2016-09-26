@@ -164,7 +164,7 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 		Uri contentUri = Uri.fromFile(file);
 		mediaScanIntent.setData(contentUri);
 		context.sendBroadcast(mediaScanIntent);
-}
+} 
 	/**
 	 * 从相册选择照片；
 	 * 

@@ -26,7 +26,7 @@ public class ChoosePhotosActivity extends Activity implements DoIModuleTypeID {
 		setContentView(album_bucket_activity_id);
 		helper = AlbumHelper.getHelper();
 		helper.init(getApplicationContext());
-		dataList = helper.getImagesBucketList(false);
+		dataList = helper.getImagesBucketList();
 		initView();
 	}
 
