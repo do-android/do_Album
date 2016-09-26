@@ -8,10 +8,15 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import core.DoServiceContainer;
 import core.helper.DoIOHelper;
 import core.helper.DoJsonHelper;
@@ -129,9 +134,10 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 				FileOutputStream photoOutputStream = new FileOutputStream(new File(_fileFullName));
 				bitmap.compress(Bitmap.CompressFormat.JPEG, _quality, photoOutputStream);
 			}
-//			galleryAddPic(DoServiceContainer.getPageViewFactory().getAppContext(), _fileFullName);
 
 			_result.setResultBoolean(true);
+			
+			galleryAddPic_MIUI(DoServiceContainer.getPageViewFactory().getAppContext(), _fileFullName);
 			galleryAddPic(DoServiceContainer.getPageViewFactory().getAppContext(), _fileFullName);
 			MediaScannerConnection.scanFile(DoServiceContainer.getPageViewFactory().getAppContext(), new String[] { _fileFullName }, null, null);
 		} else {
@@ -140,28 +146,25 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 		_scriptEngine.callback(_callbackFuncName, _result);
 	}
 
-//	private void galleryAddPic(Context context, String mCurrentPhotoPath) {
-//		Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-//		File f = new File(mCurrentPhotoPath);
-//		Uri contentUri = Uri.fromFile(f);
-//		mediaScanIntent.setData(contentUri);
-//		context.sendBroadcast(mediaScanIntent);
-//	}
+ 
 	private void galleryAddPic(Context context, String path) {
 		ContentValues localContentValues = new ContentValues();
-
 		localContentValues.put("_data", path);
-
 		localContentValues.put("description", "save image ---");
-
 		localContentValues.put("mime_type", "image/jpeg");
-
 		ContentResolver localContentResolver = context.getContentResolver();
-
 		Uri localUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-
 		localContentResolver.insert(localUri, localContentValues);
 	}
+	
+	private void galleryAddPic_MIUI(Context context, String mCurrentPhotoPath) {
+		Intent mediaScanIntent = new Intent(
+				Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+		File file = new File(mCurrentPhotoPath);
+		Uri contentUri = Uri.fromFile(file);
+		mediaScanIntent.setData(contentUri);
+		context.sendBroadcast(mediaScanIntent);
+}
 	/**
 	 * 从相册选择照片；
 	 * 
