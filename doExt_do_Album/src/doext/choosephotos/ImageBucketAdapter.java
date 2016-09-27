@@ -43,7 +43,10 @@ public class ImageBucketAdapter extends BaseAdapter implements DoIModuleTypeID {
 	public ImageBucketAdapter(Activity act, List<ImageBucket> list) {
 		this.act = act;
 		dataList = list;
+	
 		cache = new BitmapCache();
+		
+		
 	}
 
 	@Override
@@ -91,6 +94,7 @@ public class ImageBucketAdapter extends BaseAdapter implements DoIModuleTypeID {
 		} else {
 			holder = (Holder) arg1.getTag();
 		}
+		
 		ImageBucket item = dataList.get(arg0);
 		holder.count.setText("" + item.count);
 		holder.name.setText(item.bucketName);

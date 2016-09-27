@@ -1,5 +1,6 @@
 package doext.choosephotos;
 
+import java.util.Collections;
 import java.util.List;
 
 import android.app.Activity;
@@ -18,7 +19,7 @@ public class ChoosePhotosActivity extends Activity implements DoIModuleTypeID {
 	private GridView gridView;
 	private ImageBucketAdapter adapter;// 自定义的适配器
 	private AlbumHelper helper;
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -27,6 +28,7 @@ public class ChoosePhotosActivity extends Activity implements DoIModuleTypeID {
 		helper = AlbumHelper.getHelper();
 		helper.init(getApplicationContext());
 		dataList = helper.getImagesBucketList();
+		
 		initView();
 	}
 
@@ -69,4 +71,5 @@ public class ChoosePhotosActivity extends Activity implements DoIModuleTypeID {
 	public String getTypeID() {
 		return do_Album_App.getInstance().getModuleTypeID();
 	}
+
 }
