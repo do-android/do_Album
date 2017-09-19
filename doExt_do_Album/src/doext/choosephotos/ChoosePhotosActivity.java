@@ -1,6 +1,5 @@
 package doext.choosephotos;
 
-import java.util.Collections;
 import java.util.List;
 
 import android.app.Activity;
@@ -19,7 +18,7 @@ public class ChoosePhotosActivity extends Activity implements DoIModuleTypeID {
 	private GridView gridView;
 	private ImageBucketAdapter adapter;// 自定义的适配器
 	private AlbumHelper helper;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -28,7 +27,7 @@ public class ChoosePhotosActivity extends Activity implements DoIModuleTypeID {
 		helper = AlbumHelper.getHelper();
 		helper.init(getApplicationContext());
 		dataList = helper.getImagesBucketList();
-		
+
 		initView();
 	}
 
@@ -44,11 +43,17 @@ public class ChoosePhotosActivity extends Activity implements DoIModuleTypeID {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				Intent intent = getIntent();
+				ImageBucket bucket = dataList.get(position);
+				// 判断选择的是视频库还是照片库
+				if (bucket.bucketName == "Video" && helper.bucketList.get("video") == bucket) {
+					helper.currentType = "video";
+				} else {
+					helper.currentType = "image";
+				}
 				intent.setClass(ChoosePhotosActivity.this, ImageGridActivity.class);
-				intent.putExtra("imagelist", dataList.get(position).imageList);
+				intent.putExtra("imagelist", bucket.imageList);
 				startActivityForResult(intent, 100);
 			}
-
 		});
 	}
 

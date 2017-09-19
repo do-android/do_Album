@@ -16,4 +16,5 @@ public class ImageItem implements Serializable {
 	public int imageSize;
 	public long time;
 	public boolean isSelected = false;
+	public String duration;
 }

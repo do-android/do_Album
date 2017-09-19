@@ -6,7 +6,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -14,10 +16,13 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import core.helper.DoResourcesHelper;
 import core.interfaces.DoIModuleTypeID;
 import doext.app.do_Album_App;
+import doext.choosephotos.AlbumHelper;
 import doext.choosephotos.BitmapUtils;
 import doext.preview.custom.HackyViewPager;
 import doext.preview.custom.PhotoView;
@@ -28,7 +33,7 @@ public class ShowPictureViewActivity extends Activity implements DoIModuleTypeID
 	private TextView tv_count;
 	private static final int MAXWIDTH = 1000;
 	private static final int MAXHEIGHT = 1000;
-
+	private AlbumHelper helper;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -38,6 +43,9 @@ public class ShowPictureViewActivity extends Activity implements DoIModuleTypeID
 		mViewPager = (HackyViewPager) findViewById(viewpager_id);
 		int count_id = DoResourcesHelper.getIdentifier("count", "id", this);
 		tv_count = (TextView) findViewById(count_id);
+		helper = AlbumHelper.getHelper();
+		helper.init(getApplicationContext());
+		helper.init(getApplicationContext());
 		tv_count.setText("1/" + BitmapUtils.selectPaths.size());
 		mViewPager.setAdapter(new SamplePagerAdapter());
 		mViewPager.setOnPageChangeListener(new OnPageChangeListener() {
@@ -76,6 +84,7 @@ public class ShowPictureViewActivity extends Activity implements DoIModuleTypeID
 
 		@Override
 		public View instantiateItem(ViewGroup container, final int position) {
+			RelativeLayout layout = new RelativeLayout(ShowPictureViewActivity.this);
 			PhotoView photoView = new PhotoView(container.getContext());
 			try {
 				Bitmap bmp;
@@ -95,8 +104,30 @@ public class ShowPictureViewActivity extends Activity implements DoIModuleTypeID
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			container.addView(photoView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-			return photoView;
+			RelativeLayout.LayoutParams lp1 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+			layout.addView(photoView, lp1);
+			if (helper.currentType.contains("video")) {
+				final ImageView imageView = new ImageView(ShowPictureViewActivity.this);
+				imageView.setTag(position);
+				int video_icon_id = DoResourcesHelper.getIdentifierByStr("album_video_big", "drawable", "do_Album");
+				imageView.setBackgroundResource(video_icon_id);
+				RelativeLayout.LayoutParams lp2 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+				lp2.addRule(RelativeLayout.CENTER_IN_PARENT);
+				layout.addView(imageView, lp2);
+				imageView.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						int index = Integer.valueOf(v.getTag().toString());
+						String videoPath = helper.video_list.get(index);
+						Intent intent = new Intent(Intent.ACTION_VIEW);
+						String bpath = "file://" + videoPath;
+						intent.setDataAndType(Uri.parse(bpath), "video/*");
+						startActivity(intent);
+					}
+				});
+			}
+			container.addView(layout, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+			return layout;
 		}
 
 		@Override

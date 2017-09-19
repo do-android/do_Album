@@ -1,7 +1,6 @@
 package doext.choosephotos;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -31,7 +30,8 @@ import core.interfaces.DoIModuleTypeID;
 import doext.app.do_Album_App;
 import doext.choosephotos.ImageGridAdapter.TextCallback;
 import doext.implement.ConstantValue;
-import doext.implement.MyAsyncTask;
+import doext.implement.do_Album_SaveImage_AsyncTask;
+import doext.implement.do_Album_SaveVideo_AsyncTask;
 import doext.preview.ShowPictureViewActivity;
 
 public class ImageGridActivity extends Activity implements DoIModuleTypeID {
@@ -42,7 +42,7 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 	private ImageGridAdapter adapter;
 	private Button btn_cancel;
 	private Button btn_preview;
-
+	private AlbumHelper helper;
 	@SuppressLint("HandlerLeak")
 	private Handler mHandler = new Handler() {
 		@Override
@@ -62,6 +62,8 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 		int album_image_activity_id = DoResourcesHelper.getIdentifier("album_image_activity", "layout", this);
 		setContentView(album_image_activity_id);
 		dataList = (List<ImageItem>) getIntent().getSerializableExtra("imagelist");
+		helper = AlbumHelper.getHelper();
+		helper.init(getApplicationContext());
 		initView();
 	}
 
@@ -70,9 +72,9 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 		gridView = (GridView) findViewById(gridview_id);
 		gridView.setSelector(new ColorDrawable(Color.TRANSPARENT));
 		adapter = new ImageGridAdapter(ImageGridActivity.this, dataList, mHandler);
-	
+
 		gridView.setAdapter(adapter);
-		
+
 		adapter.setTextCallback(new TextCallback() {
 			public void onListen(int count) {
 				if (count > 0) {
@@ -100,19 +102,24 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 		btn_cancel = (Button) findViewById(cancel_id);
 		btn_cancel.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if (ConstantValue.MAX_COUNT == 1 && ConstantValue.ISCUT && BitmapUtils.selectPaths.size() == 1) {
-					Uri imageUri = Uri.fromFile(new File(BitmapUtils.selectPaths.get(0)));
-					Intent intentCrop = new Intent("com.android.camera.action.CROP");
-					intentCrop.setDataAndType(imageUri, "image/*");
-					intentCrop.putExtra("crop", "true");
-					intentCrop.putExtra("scale", true);
-					intentCrop.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(tempPath)));
-					intentCrop.putExtra("return-data", false);
-					intentCrop.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-					intentCrop.putExtra("noFaceDetection", true);
-					startActivityForResult(intentCrop, CutCode);
+				// 判断选择的是视频的话 则走do_Album_SaveVideo_AsyncTask
+				if (helper.currentType.contains("video")) {
+					new do_Album_SaveVideo_AsyncTask(ImageGridActivity.this, getIntent()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 				} else {
-					new MyAsyncTask(ImageGridActivity.this, getIntent()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+					if (ConstantValue.MAX_COUNT == 1 && ConstantValue.ISCUT && BitmapUtils.selectPaths.size() == 1) {
+						Uri imageUri = Uri.fromFile(new File(BitmapUtils.selectPaths.get(0)));
+						Intent intentCrop = new Intent("com.android.camera.action.CROP");
+						intentCrop.setDataAndType(imageUri, "image/*");
+						intentCrop.putExtra("crop", "true");
+						intentCrop.putExtra("scale", true);
+						intentCrop.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(tempPath)));
+						intentCrop.putExtra("return-data", false);
+						intentCrop.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+						intentCrop.putExtra("noFaceDetection", true);
+						startActivityForResult(intentCrop, CutCode);
+					} else {
+						new do_Album_SaveImage_AsyncTask(ImageGridActivity.this, getIntent()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+					}
 				}
 			}
 		});
@@ -142,9 +149,12 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 			finish();
 			break;
 		case CutCode:
+			Intent intent = getIntent();
+			// 如果是截图的话 则把相册里面的原始照片的路径传过去
+			intent.putExtra("originalImage", BitmapUtils.selectPaths.get(0));
 			BitmapUtils.selectPaths.clear();
 			BitmapUtils.selectPaths.add(tempPath);
-			new MyAsyncTask(ImageGridActivity.this, getIntent()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+			new do_Album_SaveImage_AsyncTask(ImageGridActivity.this, intent).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			break;
 		}
 	}

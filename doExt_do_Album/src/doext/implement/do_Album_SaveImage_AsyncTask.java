@@ -11,10 +11,13 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.text.TextUtils;
+import core.DoServiceContainer;
 import core.helper.DoIOHelper;
+import doext.choosephotos.AlbumHelper;
 import doext.choosephotos.BitmapUtils;
 
-public class MyAsyncTask extends AsyncTask<Void, Void, ArrayList<String>> {
+public class do_Album_SaveImage_AsyncTask extends AsyncTask<Void, Void, ArrayList<String>> {
 
 	private ProgressDialog mpDialog;
 	private Activity activity;
@@ -22,8 +25,10 @@ public class MyAsyncTask extends AsyncTask<Void, Void, ArrayList<String>> {
 	private int height;
 	private int quality;
 	private String tagerDir;
+	private String originalImage;
+	private AlbumHelper helper;
 
-	public MyAsyncTask(Activity activity, Intent intent) {
+	public do_Album_SaveImage_AsyncTask(Activity activity, Intent intent) {
 		this.activity = activity;
 		this.width = intent.getIntExtra("width", 0);
 		this.height = intent.getIntExtra("height", 0);
@@ -31,6 +36,10 @@ public class MyAsyncTask extends AsyncTask<Void, Void, ArrayList<String>> {
 		this.quality = this.quality > 100 ? 100 : this.quality;
 		this.quality = this.quality < 1 ? 1 : this.quality;
 		this.tagerDir = intent.getStringExtra("tagerDir");
+		// 原始图片路径 如果是截图 的话 会把这个数据传过来 传的是相册里面原始图片的路径
+		this.originalImage = intent.getStringExtra("originalImage");
+		helper = AlbumHelper.getHelper();
+		helper.init(DoServiceContainer.getPageViewFactory().getAppContext());
 	}
 
 	protected void onPreExecute() {
@@ -68,6 +77,11 @@ public class MyAsyncTask extends AsyncTask<Void, Void, ArrayList<String>> {
 					// 删除临时文件
 					new File(imagePath).delete();
 				}
+				//如果originalImage有值 则代表 是截图跳转过来的页面
+				if (TextUtils.isEmpty(originalImage))
+					helper.saveExif(imagePath, _fileFullName);
+				else
+					helper.saveExif(originalImage, _fileFullName);
 			}
 
 		} catch (Exception _err) {

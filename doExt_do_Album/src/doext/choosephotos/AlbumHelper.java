@@ -1,17 +1,24 @@
 package doext.choosephotos;
 
+import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TimeZone;
 
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.media.ExifInterface;
+import android.provider.MediaStore;
 import android.provider.MediaStore.Images.Media;
 import android.provider.MediaStore.Images.Thumbnails;
+import android.text.TextUtils;
 
 /**
  * 专辑帮助类
@@ -25,11 +32,14 @@ public class AlbumHelper {
 	// 缩略图列表
 	private HashMap<String, String> thumbnailList = new HashMap<String, String>();
 	// 专辑列表
-	private HashMap<String, ImageBucket> bucketList = new HashMap<String, ImageBucket>();
+	public HashMap<String, ImageBucket> bucketList = new HashMap<String, ImageBucket>();
 	// 是否创建了图片集
 //	private boolean hasBuildImagesBucketList = false;
-
+	// 用于保存选中的视频路径
+	public List<String> video_list = new ArrayList<String>();
 	private static AlbumHelper instance;
+	// 用于判断当前是照片库还是视频库
+	public String currentType;
 
 	private AlbumHelper() {
 	}
@@ -88,10 +98,12 @@ public class AlbumHelper {
 	private void buildImagesBucketList() {
 		// 构造缩略图索引
 		getThumbnail();
+		// 构造视频缩略图
+		getVideoThumbnail();
 		// 构造相册索引
 		String columns[] = new String[] { Media._ID, Media.BUCKET_ID, Media.PICASA_ID, Media.DATA, Media.DISPLAY_NAME, Media.TITLE, Media.SIZE, Media.BUCKET_DISPLAY_NAME };
 		// 得到一个游标
-		Cursor cur = cr.query(Media.EXTERNAL_CONTENT_URI, columns, null, null,  "_id DESC");
+		Cursor cur = cr.query(Media.EXTERNAL_CONTENT_URI, columns, null, null, "_id DESC");
 		if (cur.moveToFirst()) {
 			// 获取指定列的索引
 			int photoIDIndex = cur.getColumnIndexOrThrow(Media._ID);
@@ -115,11 +127,76 @@ public class AlbumHelper {
 				imageItem.imageId = _id;
 				imageItem.imagePath = path;
 				imageItem.thumbnailPath = thumbnailList.get(_id);
+				imageItem.duration = "00:00";
 				bucket.imageList.add(imageItem);
 
 			} while (cur.moveToNext());
 		}
-//		hasBuildImagesBucketList = true;
+
+		// hasBuildImagesBucketList = true;
+		// 添加视频bucket
+		String[] proj = { MediaStore.Video.Thumbnails._ID, MediaStore.Video.Thumbnails.DATA, MediaStore.Video.Media.DURATION, MediaStore.Video.Media.SIZE, MediaStore.Video.Media.DISPLAY_NAME,
+				MediaStore.Video.Media.DATE_MODIFIED };
+		Cursor mCursor = cr.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, proj, MediaStore.Video.Media.MIME_TYPE + "=?", new String[] { "video/mp4" }, MediaStore.Video.Media.DATE_MODIFIED
+				+ " desc");
+		if (mCursor != null) {
+			ImageBucket bucket = new ImageBucket();
+			bucket.imageList = new ArrayList<ImageItem>();
+			bucket.bucketName = "Video";
+			bucketList.put("video", bucket);
+			while (mCursor.moveToNext()) {
+				// 获取视频的路径
+				String videoId = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID));
+				String path = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA));
+				long duration = mCursor.getLong(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
+				// 提前生成缩略图，再获取：http://stackoverflow.com/questions/27903264/how-to-get-the-video-thumbnail-path-and-not-the-bitmap
+				MediaStore.Video.Thumbnails.getThumbnail(cr, Long.valueOf(videoId), MediaStore.Video.Thumbnails.MICRO_KIND, null);
+				bucket.count++;
+				ImageItem imageItem = new ImageItem();
+				imageItem.imageId = videoId;
+				imageItem.imagePath = path;
+				imageItem.thumbnailPath = thumbnailList.get(videoId);
+				imageItem.duration = getFormat(duration);
+				bucket.imageList.add(imageItem);
+			}
+			mCursor.close();
+		}
+	}
+
+	private String getFormat(long data) {
+		long second = data / 1000;
+		SimpleDateFormat sdf = null;
+		if (second >= 0 && second < 3600) {
+			sdf = new SimpleDateFormat("mm:ss", Locale.getDefault());
+			sdf.setTimeZone(TimeZone.getTimeZone("GMT+0"));
+		} else {
+			sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+			sdf.setTimeZone(TimeZone.getTimeZone("GMT+0"));
+		}
+		return sdf.format(data);
+	}
+
+	private void getVideoThumbnail() {
+		String[] thumbColumns = { MediaStore.Video.Thumbnails.DATA, MediaStore.Video.Thumbnails.VIDEO_ID };
+		// 视频其他信息的查询条件
+		String[] mediaColumns = { MediaStore.Video.Media._ID, MediaStore.Video.Media.DATA, MediaStore.Video.Media.DURATION };
+		Cursor cursor = context.getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaColumns, null, null, null);
+		if (null != cursor) {
+			if (cursor.moveToFirst()) {
+				do {
+					int id = cursor.getInt(cursor.getColumnIndex(MediaStore.Video.Media._ID));
+					Cursor thumbCursor = context.getContentResolver()
+							.query(MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI, thumbColumns, MediaStore.Video.Thumbnails.VIDEO_ID + "=" + id, null, null);
+					if (thumbCursor.moveToFirst()) {
+						String thumbnails = thumbCursor.getString(thumbCursor.getColumnIndex(MediaStore.Video.Thumbnails.DATA));
+						// ThumbnailUtils.createVideoThumbnail(thumbnails,
+						// kind);
+						thumbnailList.put("" + id, thumbnails);
+					}
+				} while (cursor.moveToNext());
+			}
+			cursor.close();
+		}
 	}
 
 	/**
@@ -138,6 +215,25 @@ public class AlbumHelper {
 			tmpList.add(entry.getValue());
 		}
 		return tmpList;
+	}
+
+	// 保存元数据
+	public void saveExif(String oldFilePath, String newFilePath) throws Exception {
+		ExifInterface oldExif = new ExifInterface(oldFilePath);
+		ExifInterface newExif = new ExifInterface(newFilePath);
+		Class<ExifInterface> cls = ExifInterface.class;
+		Field[] fields = cls.getFields();
+		for (int i = 0; i < fields.length; i++) {
+			String fieldName = fields[i].getName();
+			if (!TextUtils.isEmpty(fieldName) && fieldName.startsWith("TAG")) {
+				String fieldValue = fields[i].get(cls).toString();
+				String attribute = oldExif.getAttribute(fieldValue);
+				if (attribute != null) {
+					newExif.setAttribute(fieldValue, attribute);
+				}
+			}
+		}
+		newExif.saveAttributes();
 	}
 
 	public void clear() {

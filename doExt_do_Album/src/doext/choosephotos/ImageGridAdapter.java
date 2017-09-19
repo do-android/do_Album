@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import core.DoServiceContainer;
 import core.helper.DoResourcesHelper;
 import core.interfaces.DoIModuleTypeID;
 import doext.app.do_Album_App;
@@ -29,6 +30,7 @@ public class ImageGridAdapter extends BaseAdapter implements DoIModuleTypeID {
 	private BitmapCache cache;
 	private Handler mHandler;
 	private int selectTotal = 0;
+	private AlbumHelper helper;
 	private ImageCallback callback = new ImageCallback() {
 		public void imageLoad(ImageView imageView, Bitmap bitmap, Object... params) {
 			if (imageView != null && bitmap != null) {
@@ -57,6 +59,8 @@ public class ImageGridAdapter extends BaseAdapter implements DoIModuleTypeID {
 		dataList = list;
 		cache = new BitmapCache();
 		this.mHandler = mHandler;
+		helper = AlbumHelper.getHelper();
+		helper.init(DoServiceContainer.getPageViewFactory().getAppContext());
 	}
 
 	@Override
@@ -82,6 +86,7 @@ public class ImageGridAdapter extends BaseAdapter implements DoIModuleTypeID {
 		private ImageView iv;
 		private ImageView selected;
 		private TextView text;
+		private TextView duration;
 	}
 
 	@Override
@@ -98,12 +103,13 @@ public class ImageGridAdapter extends BaseAdapter implements DoIModuleTypeID {
 			holder.selected = (ImageView) convertView.findViewById(isselected_id);
 			int item_image_grid_text_id = DoResourcesHelper.getIdentifier("item_image_grid_text", "id", this);
 			holder.text = (TextView) convertView.findViewById(item_image_grid_text_id);
+			int video_duration_id = DoResourcesHelper.getIdentifier("video_duration", "id", this);
+			holder.duration = (TextView) convertView.findViewById(video_duration_id);
 			convertView.setTag(holder);
 		} else {
 			holder = (Holder) convertView.getTag();
 		}
 		final ImageItem item = dataList.get(position);
-
 		holder.iv.setTag(item.imagePath);
 		cache.displayBmp(holder.iv, item.thumbnailPath, item.imagePath, callback);
 		if (item.isSelected) {
@@ -115,6 +121,13 @@ public class ImageGridAdapter extends BaseAdapter implements DoIModuleTypeID {
 			holder.selected.setImageBitmap(null);
 			holder.text.setBackgroundColor(Color.TRANSPARENT);
 		}
+		if (item.duration.equals("00:00")) {
+			holder.duration.setVisibility(View.GONE);
+		} else {
+			holder.duration.setText(item.duration);
+			holder.duration.setVisibility(View.VISIBLE);
+		}
+
 		holder.iv.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -129,14 +142,24 @@ public class ImageGridAdapter extends BaseAdapter implements DoIModuleTypeID {
 						selectTotal++;
 						if (textcallback != null)
 							textcallback.onListen(selectTotal);
-						BitmapUtils.selectPaths.add(item.imagePath);
+						if (helper.currentType.equals("image")) {
+							BitmapUtils.selectPaths.add(item.imagePath);
+						} else {
+							BitmapUtils.selectPaths.add(item.thumbnailPath);
+							helper.video_list.add(item.imagePath);
+						}
 					} else {
 						holder.selected.setImageBitmap(null);
 						holder.text.setBackgroundColor(Color.TRANSPARENT);
 						selectTotal--;
 						if (textcallback != null)
 							textcallback.onListen(selectTotal);
-						BitmapUtils.selectPaths.remove(item.imagePath);
+						if (helper.currentType.equals("image")) {
+							BitmapUtils.selectPaths.remove(item.imagePath);
+						} else {
+							BitmapUtils.selectPaths.remove(item.thumbnailPath);
+							helper.video_list.remove(item.imagePath);
+						}
 					}
 				} else if (selectTotal >= ConstantValue.MAX_COUNT) {
 					if (item.isSelected) {
@@ -146,7 +169,12 @@ public class ImageGridAdapter extends BaseAdapter implements DoIModuleTypeID {
 						selectTotal--;
 						if (textcallback != null)
 							textcallback.onListen(selectTotal);
-						BitmapUtils.selectPaths.remove(item.imagePath);
+						if (helper.currentType.equals("image")) {
+							BitmapUtils.selectPaths.remove(item.imagePath);
+						} else {
+							BitmapUtils.selectPaths.remove(item.thumbnailPath);
+							helper.video_list.remove(item.imagePath);
+						}
 					} else {
 						Message message = Message.obtain(mHandler, 0);
 						message.sendToTarget();

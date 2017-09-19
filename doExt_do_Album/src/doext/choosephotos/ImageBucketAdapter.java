@@ -43,10 +43,9 @@ public class ImageBucketAdapter extends BaseAdapter implements DoIModuleTypeID {
 	public ImageBucketAdapter(Activity act, List<ImageBucket> list) {
 		this.act = act;
 		dataList = list;
-	
+
 		cache = new BitmapCache();
-		
-		
+
 	}
 
 	@Override
@@ -73,6 +72,7 @@ public class ImageBucketAdapter extends BaseAdapter implements DoIModuleTypeID {
 		private ImageView selected;
 		private TextView name;
 		private TextView count;
+		private ImageView bucket_video_image;
 	}
 
 	@Override
@@ -90,11 +90,13 @@ public class ImageBucketAdapter extends BaseAdapter implements DoIModuleTypeID {
 			holder.name = (TextView) arg1.findViewById(name_id);
 			int count_id = DoResourcesHelper.getIdentifier("count", "id", this);
 			holder.count = (TextView) arg1.findViewById(count_id);
+			int bucket_video_image_id = DoResourcesHelper.getIdentifier("bucket_video_image", "id", this);
+			holder.bucket_video_image = (ImageView) arg1.findViewById(bucket_video_image_id);
 			arg1.setTag(holder);
 		} else {
 			holder = (Holder) arg1.getTag();
 		}
-		
+
 		ImageBucket item = dataList.get(arg0);
 		holder.count.setText("" + item.count);
 		holder.name.setText(item.bucketName);
@@ -108,6 +110,8 @@ public class ImageBucketAdapter extends BaseAdapter implements DoIModuleTypeID {
 			holder.iv.setImageBitmap(null);
 			Log.e(TAG, "no images in bucket " + item.bucketName);
 		}
+		if (item.bucketName == "Video")
+			holder.bucket_video_image.setVisibility(View.VISIBLE);
 		return arg1;
 	}
 
