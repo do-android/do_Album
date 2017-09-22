@@ -27,4 +27,19 @@
         android:layout_alignParentTop="true"
         android:layout_margin="3dp" />
 
+    <TextView
+        android:id="@+id/video_duration"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:layout_alignParentBottom="true"
+        android:drawableLeft="@drawable/album_video_small"
+        android:drawablePadding="10dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="10dp"
+        android:paddingTop="8dp"
+        android:text="00:00"
+        android:textColor="#ffffff"
+        android:textSize="11sp"
+        android:visibility="gone" />
+
 </RelativeLayout>

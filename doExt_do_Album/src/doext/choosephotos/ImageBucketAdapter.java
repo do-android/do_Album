@@ -110,7 +110,7 @@ public class ImageBucketAdapter extends BaseAdapter implements DoIModuleTypeID {
 			holder.iv.setImageBitmap(null);
 			Log.e(TAG, "no images in bucket " + item.bucketName);
 		}
-		if (item.bucketName == "Video")
+		if ("Video".equals(item.bucketName))
 			holder.bucket_video_image.setVisibility(View.VISIBLE);
 		return arg1;
 	}
