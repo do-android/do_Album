@@ -1,6 +1,7 @@
 package doext.choosephotos;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -27,11 +28,11 @@ import android.widget.GridView;
 import android.widget.Toast;
 import core.helper.DoResourcesHelper;
 import core.interfaces.DoIModuleTypeID;
+import core.interfaces.DoISourceFS;
 import doext.app.do_Album_App;
 import doext.choosephotos.ImageGridAdapter.TextCallback;
 import doext.implement.ConstantValue;
 import doext.implement.do_Album_SaveImage_AsyncTask;
-import doext.implement.do_Album_SaveVideo_AsyncTask;
 import doext.preview.ShowPictureViewActivity;
 
 public class ImageGridActivity extends Activity implements DoIModuleTypeID {
@@ -50,6 +51,9 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 			switch (msg.what) {
 			case 0:
 				Toast.makeText(ImageGridActivity.this, "一次最多只能选择" + ConstantValue.MAX_COUNT + "张图片", Toast.LENGTH_SHORT).show();
+				break;
+			case 1:
+				Toast.makeText(ImageGridActivity.this, "一次最多只能选择1个视频", Toast.LENGTH_SHORT).show();
 				break;
 			}
 		}
@@ -78,7 +82,11 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 		adapter.setTextCallback(new TextCallback() {
 			public void onListen(int count) {
 				if (count > 0) {
-					btn_cancel.setText("完成(" + count + "/" + ConstantValue.MAX_COUNT + ")");
+					int maxCount = 1;
+					//判断如果是图片库的话 可选择的最大张数 依旧是ConstantValue.MAX_COUNT 如果是视频库的话最大数为1
+					if (helper.currentType.equals("image")) 
+						maxCount = ConstantValue.MAX_COUNT;
+					btn_cancel.setText("完成(" + count + "/" + maxCount + ")");
 					btn_preview.setEnabled(true);
 					btn_preview.setTextColor(Color.WHITE);
 					btn_preview.setText("预览(" + count + ")");
@@ -104,7 +112,18 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 			public void onClick(View v) {
 				// 判断选择的是视频的话 则走do_Album_SaveVideo_AsyncTask
 				if (helper.currentType.contains("video")) {
-					new do_Album_SaveVideo_AsyncTask(ImageGridActivity.this, getIntent()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+					Intent intent = new Intent();
+					ArrayList<String> urlList = new ArrayList<String>();
+					for (int i = 0; i < helper.video_list.size(); i++) {
+						String videoPath = helper.video_list.get(i);
+						String result = DoISourceFS.SDCARD + videoPath;
+						urlList.add(result);
+					}
+					//保存过之后清空之前保存的视频路径
+					helper.video_list.clear();
+					intent.putStringArrayListExtra("result", urlList);
+					ImageGridActivity.this.setResult(Activity.RESULT_OK, intent);
+					ImageGridActivity.this.finish();
 				} else {
 					if (ConstantValue.MAX_COUNT == 1 && ConstantValue.ISCUT && BitmapUtils.selectPaths.size() == 1) {
 						Uri imageUri = Uri.fromFile(new File(BitmapUtils.selectPaths.get(0)));

@@ -93,13 +93,23 @@ public class AlbumHelper {
 	}
 
 	/**
-	 * 得到图片集
+	 * 得到图片集 0-图片与视频；1-仅图片；2-仅视频
 	 */
-	private void buildImagesBucketList() {
+	private void buildImagesBucketList(int type) {
+		if (type == 1) {
+			getImageBucket();
+		} else if (type == 2) {
+			getVideoBucket();
+		} else {
+			getImageBucket();
+			getVideoBucket();
+		}
+
+	}
+
+	private void getImageBucket() {
 		// 构造缩略图索引
 		getThumbnail();
-		// 构造视频缩略图
-		getVideoThumbnail();
 		// 构造相册索引
 		String columns[] = new String[] { Media._ID, Media.BUCKET_ID, Media.PICASA_ID, Media.DATA, Media.DISPLAY_NAME, Media.TITLE, Media.SIZE, Media.BUCKET_DISPLAY_NAME };
 		// 得到一个游标
@@ -132,8 +142,11 @@ public class AlbumHelper {
 
 			} while (cur.moveToNext());
 		}
+	}
 
-		// hasBuildImagesBucketList = true;
+	private void getVideoBucket() {
+		// 构造视频缩略图
+		getVideoThumbnail();
 		// 添加视频bucket
 		String[] proj = { MediaStore.Video.Thumbnails._ID, MediaStore.Video.Thumbnails.DATA, MediaStore.Video.Media.DURATION, MediaStore.Video.Media.SIZE, MediaStore.Video.Media.DISPLAY_NAME,
 				MediaStore.Video.Media.DATE_MODIFIED };
@@ -205,9 +218,9 @@ public class AlbumHelper {
 	 * @param refresh
 	 * @return
 	 */
-	public List<ImageBucket> getImagesBucketList() {
+	public List<ImageBucket> getImagesBucketList(int type) {
 		clear();
-		buildImagesBucketList();
+		buildImagesBucketList(type);
 		List<ImageBucket> tmpList = new ArrayList<ImageBucket>();
 		Iterator<Entry<String, ImageBucket>> itr = bucketList.entrySet().iterator();
 		while (itr.hasNext()) {

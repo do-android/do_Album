@@ -189,6 +189,7 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 		int _height = DoJsonHelper.getInt(_dictParas, "height", -1); // 选择后的图片的高度，不填默认图片高度
 		int _quality = DoJsonHelper.getInt(_dictParas, "quality", 100); // 清晰度1-100,缺省是100表示原始的图片质量
 		boolean _iscut = DoJsonHelper.getBoolean(_dictParas, "iscut", false);
+		int _type = DoJsonHelper.getInt(_dictParas, "type", 0);
 		ConstantValue.MAX_COUNT = _maxCount;
 		if (_maxCount == 1) {
 			ConstantValue.ISCUT = _iscut;
@@ -203,6 +204,7 @@ public class do_Album_Model extends DoSingletonModule implements do_Album_IMetho
 		i.putExtra("height", _height);
 		i.putExtra("quality", _quality);
 		i.putExtra("tagerDir", _scriptEngine.getCurrentApp().getDataFS().getRootPath());
+		i.putExtra("type", _type);
 		_activity.startActivityForResult(i, 100);
 	}
 

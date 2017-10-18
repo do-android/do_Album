@@ -132,7 +132,11 @@ public class ImageGridAdapter extends BaseAdapter implements DoIModuleTypeID {
 
 			@Override
 			public void onClick(View v) {
-				if (selectTotal < ConstantValue.MAX_COUNT) {
+				int count = 1;
+				//判断如果是图片库的话 可选择的最大张数 依旧是ConstantValue.MAX_COUNT 如果是视频库的话最大数为1
+				if (helper.currentType.equals("image")) 
+					count = ConstantValue.MAX_COUNT;
+				if (selectTotal < count) {
 					item.isSelected = !item.isSelected;
 					if (item.isSelected) {
 						int album_select_id = DoResourcesHelper.getIdentifier("album_select", "drawable", ImageGridAdapter.this);
@@ -161,7 +165,7 @@ public class ImageGridAdapter extends BaseAdapter implements DoIModuleTypeID {
 							helper.video_list.remove(item.imagePath);
 						}
 					}
-				} else if (selectTotal >= ConstantValue.MAX_COUNT) {
+				} else if (selectTotal >= count) {
 					if (item.isSelected) {
 						item.isSelected = !item.isSelected;
 						holder.selected.setImageBitmap(null);
@@ -176,13 +180,21 @@ public class ImageGridAdapter extends BaseAdapter implements DoIModuleTypeID {
 							helper.video_list.remove(item.imagePath);
 						}
 					} else {
-						Message message = Message.obtain(mHandler, 0);
-						message.sendToTarget();
+						if (helper.currentType.equals("image")) {
+							sendMessage(0);
+						} else {
+							sendMessage(1);
+						}
 					}
 				}
 			}
 		});
 		return convertView;
+	}
+
+	private void sendMessage(int result) {
+		Message message = Message.obtain(mHandler, result);
+		message.sendToTarget();
 	}
 
 	@Override
