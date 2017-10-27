@@ -139,7 +139,6 @@ public class AlbumHelper {
 				imageItem.thumbnailPath = thumbnailList.get(_id);
 				imageItem.duration = "00:00";
 				bucket.imageList.add(imageItem);
-
 			} while (cur.moveToNext());
 		}
 	}
@@ -153,10 +152,6 @@ public class AlbumHelper {
 		Cursor mCursor = cr.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, proj, MediaStore.Video.Media.MIME_TYPE + "=?", new String[] { "video/mp4" }, MediaStore.Video.Media.DATE_MODIFIED
 				+ " desc");
 		if (mCursor != null) {
-			ImageBucket bucket = new ImageBucket();
-			bucket.imageList = new ArrayList<ImageItem>();
-			bucket.bucketName = "Video";
-			bucketList.put("video", bucket);
 			while (mCursor.moveToNext()) {
 				// 获取视频的路径
 				String videoId = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID));
@@ -164,6 +159,14 @@ public class AlbumHelper {
 				long duration = mCursor.getLong(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
 				// 提前生成缩略图，再获取：http://stackoverflow.com/questions/27903264/how-to-get-the-video-thumbnail-path-and-not-the-bitmap
 				MediaStore.Video.Thumbnails.getThumbnail(cr, Long.valueOf(videoId), MediaStore.Video.Thumbnails.MICRO_KIND, null);
+
+				ImageBucket bucket = bucketList.get("do_Album_Video");
+				if (bucket == null) {
+					bucket = new ImageBucket();
+					bucketList.put("do_Album_Video", bucket);
+					bucket.imageList = new ArrayList<ImageItem>();
+					bucket.bucketName = "Video";
+				}
 				bucket.count++;
 				ImageItem imageItem = new ImageItem();
 				imageItem.imageId = videoId;
