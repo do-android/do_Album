@@ -32,7 +32,7 @@ public class AlbumHelper {
 	// 缩略图列表
 	private HashMap<String, String> thumbnailList = new HashMap<String, String>();
 	// 专辑列表
-	public HashMap<String, ImageBucket> bucketList = new HashMap<String, ImageBucket>();
+	private HashMap<String, ImageBucket> bucketList = new HashMap<String, ImageBucket>();
 	// 是否创建了图片集
 //	private boolean hasBuildImagesBucketList = false;
 	// 用于保存选中的视频路径
@@ -97,14 +97,13 @@ public class AlbumHelper {
 	 */
 	private void buildImagesBucketList(int type) {
 		if (type == 1) {
-			getImageBucket();
+			getVideoBucket();
 		} else if (type == 2) {
+			getImageBucket();
 			getVideoBucket();
 		} else {
 			getImageBucket();
-			getVideoBucket();
 		}
-
 	}
 
 	private void getImageBucket() {
@@ -196,13 +195,12 @@ public class AlbumHelper {
 		String[] thumbColumns = { MediaStore.Video.Thumbnails.DATA, MediaStore.Video.Thumbnails.VIDEO_ID };
 		// 视频其他信息的查询条件
 		String[] mediaColumns = { MediaStore.Video.Media._ID, MediaStore.Video.Media.DATA, MediaStore.Video.Media.DURATION };
-		Cursor cursor = context.getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaColumns, null, null, null);
+		Cursor cursor = cr.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaColumns, null, null, null);
 		if (null != cursor) {
 			if (cursor.moveToFirst()) {
 				do {
 					int id = cursor.getInt(cursor.getColumnIndex(MediaStore.Video.Media._ID));
-					Cursor thumbCursor = context.getContentResolver()
-							.query(MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI, thumbColumns, MediaStore.Video.Thumbnails.VIDEO_ID + "=" + id, null, null);
+					Cursor thumbCursor = cr.query(MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI, thumbColumns, MediaStore.Video.Thumbnails.VIDEO_ID + "=" + id, null, null);
 					if (thumbCursor.moveToFirst()) {
 						String thumbnails = thumbCursor.getString(thumbCursor.getColumnIndex(MediaStore.Video.Thumbnails.DATA));
 						// ThumbnailUtils.createVideoThumbnail(thumbnails,
@@ -222,7 +220,7 @@ public class AlbumHelper {
 	 * @return
 	 */
 	public List<ImageBucket> getImagesBucketList(int type) {
-		clear();
+		bucketList.clear();
 		buildImagesBucketList(type);
 		List<ImageBucket> tmpList = new ArrayList<ImageBucket>();
 		Iterator<Entry<String, ImageBucket>> itr = bucketList.entrySet().iterator();
@@ -252,7 +250,7 @@ public class AlbumHelper {
 		newExif.saveAttributes();
 	}
 
-	public void clear() {
-		bucketList.clear();
+	public ImageBucket getVoideBucket() {
+		return bucketList.get("do_Album_Video");
 	}
 }

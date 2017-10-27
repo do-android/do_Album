@@ -45,7 +45,7 @@ public class ChoosePhotosActivity extends Activity implements DoIModuleTypeID {
 				Intent intent = getIntent();
 				ImageBucket bucket = dataList.get(position);
 				// 判断选择的是视频库还是照片库
-				if ("Video".equals(bucket.bucketName) && helper.bucketList.get("do_Album_Video") == bucket) {
+				if ("Video".equals(bucket.bucketName) && helper.getVoideBucket() == bucket) {
 					helper.currentType = "video";
 				} else {
 					helper.currentType = "image";
