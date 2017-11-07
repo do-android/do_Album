@@ -65,7 +65,7 @@ public class ImageGridActivity extends Activity implements DoIModuleTypeID {
 		super.onCreate(savedInstanceState);
 		int album_image_activity_id = DoResourcesHelper.getIdentifier("album_image_activity", "layout", this);
 		setContentView(album_image_activity_id);
-		dataList = (List<ImageItem>) getIntent().getSerializableExtra("imagelist");
+		dataList = (ArrayList<ImageItem>) ImageDataHolder.getInstance().retrieve(ImageDataHolder.DO_CURRENT_FOLDER_ITEM);
 		helper = AlbumHelper.getHelper();
 		helper.init(getApplicationContext());
 		initView();

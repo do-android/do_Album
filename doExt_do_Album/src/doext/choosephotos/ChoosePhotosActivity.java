@@ -51,7 +51,8 @@ public class ChoosePhotosActivity extends Activity implements DoIModuleTypeID {
 					helper.currentType = "image";
 				}
 				intent.setClass(ChoosePhotosActivity.this, ImageGridActivity.class);
-				intent.putExtra("imagelist", bucket.imageList);
+				//使用弱引用替换Bundle，避免相册有大量图片时崩溃
+				ImageDataHolder.getInstance().save(ImageDataHolder.DO_CURRENT_FOLDER_ITEM, bucket.imageList);
 				startActivityForResult(intent, 100);
 			}
 		});
